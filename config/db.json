@@ -1,0 +1,9 @@
+{
+  "user": "localiser_node",
+  "database": "localiser_node",
+  "password": "1`5RFA9fm5+M",
+  "host": "127.0.0.1",
+  "port": 5432,
+  "max": 10,
+  "idleTimeoutMillis": 30000
+}
