@@ -1,10 +1,11 @@
 var express = require('express');
-var router = express.Router();
 var pg = require('pg').native;
 var crypto = require('crypto');
-var config_test = require('../config/db.json');
+var config = require('../config/db.json');
+var Location = require('../models/location');
 
-var pool = new pg.Pool(config_test);
+var router = express.Router();
+var pool = new pg.Pool(config);
 
 pool.on('error', function (error, client) {
     console.error("Error from pool: ", error)
@@ -36,7 +37,7 @@ router.post('/', save);
 
 function save(request, response) {
     var location = getLocationFrom(request.body);
-    if (!isValid(location)) {
+    if (!location.isValid()) {
         response.status(400).json({"status": "Longitude or latitude is invalid"});
         return;
     }
@@ -47,19 +48,11 @@ function save(request, response) {
 }
 
 function getLocationFrom(body) {
-    return {
-        "latitude": body.latitude,
-        "longitude": body.longitude,
-        "description": body.description
-    };
+    var location = new Location(body.latitude, body.longitude);
+    location.description = body.description;
+    return location;
 }
 
-function isValid(location) {
-    if (location.longitude < -180 || location.longitude > 180 || location.latitude < -90 || location.latitude > 90) {
-        return false;
-    }
-    return true;
-}
 function getCode() {
     var bytes = crypto.randomBytes(6);
     return Buffer.from(bytes).toString('base64');
@@ -78,7 +71,7 @@ router.put("/:code", update);
 
 function update(request, response) {
     var location = getLocationFrom(request.body);
-    if (!isValid(location)) {
+    if (!location.isValid()) {
         response.status(400).json({"status": "Longitude or latitude is invalid"});
         return;
     }
