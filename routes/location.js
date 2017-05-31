@@ -3,6 +3,7 @@ var pg = require('pg').native;
 var crypto = require('crypto');
 var config = require('../config/db.json');
 var Location = require('../models/location');
+var solver = require('../logic/travelingSalesmanSolver')
 
 var router = express.Router();
 var pool = new pg.Pool(config);
@@ -80,5 +81,27 @@ function update(request, response) {
         .then(result => response.json({"status": "Updated successfully"}))
         .catch(exception => handleException(exception, response));
 }
+
+router.post("/shortest-route", findShortestPath);
+
+function findShortestPath(request, response) {
+    var codes = request.body.codes;
+    var codesList = "'"+codes.join("','")+"'";
+    var statement = "SELECT * FROM localisations WHERE code IN ( "+codesList+")";
+    console.log(statement);
+    pool.query(statement, [])
+        .then(result => runSolver(response, result))
+        .catch(exception => handleException(exception, response));
+}
+
+function runSolver(response, result) {
+    var locations = [];
+    console.log(result.rows);
+    for(let index in result.rows){
+        locations.push(getLocationFrom(result.rows[index]));
+    }
+    response.json(solver.findShortestPath(locations[0], locations));
+}
+
 
 module.exports = router;

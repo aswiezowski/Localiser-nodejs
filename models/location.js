@@ -5,9 +5,10 @@ function toRadians(angle) {
 var Radius = 6371;
 
 module.exports = class Location {
-    constructor(latitude, longitude) {
+    constructor(latitude, longitude, description) {
         this.latitude = latitude;
         this.longitude = longitude;
+        this.description = description;
     }
 
     distance(location) {
